@@ -1,0 +1,131 @@
+using CommunityToolkit.Maui.Alerts;
+using DH_Beta.DataServices;
+using DH_Beta.Models;
+using DH_Beta.ViewModels;
+using System.Diagnostics;
+
+namespace DH_Beta;
+
+public partial class SignUp : ContentPage
+{
+    private RestService restService;
+    private readonly IAuthService _authService;
+    /*private readonly IRecordAudioService _recordAudioService;
+    private readonly IAudioPlayerService _audioPlayerService;*/
+    private string _surname;
+    private string _userprincipalname;
+    private string _givenname;
+    private string _password;
+    private string _confirmpassword;
+
+    public SignUp(IAuthService authService/*, IRecordAudioService recordAudioService, IAudioPlayerService audioPlayerService*/)
+    {
+        InitializeComponent();
+        restService = new RestService();
+        GridCalculations.ConfigureScreenGrid(ScreenGrid);
+        _authService = authService;
+        /*_recordAudioService = recordAudioService;
+        _audioPlayerService = audioPlayerService;   */
+    }
+
+    public async void CreateUser(object sender, EventArgs e)
+    {
+        
+        if (fnameValidator.IsNotValid)
+        {
+            foreach (var error in fnameValidator.Errors)
+            {
+                await DisplayAlert("Register error", error.ToString(), "OK");
+            }
+        }
+        else
+        {
+            if (lnameValidator.IsNotValid)
+            {
+                foreach (var error in lnameValidator.Errors)
+                {
+                    await DisplayAlert("Register error", error.ToString(), "OK");
+                }
+            }
+            else
+            {
+                if (emailValidator.IsNotValid)
+                {
+                    foreach (var error in emailValidator.Errors)
+                    {
+                        await DisplayAlert("Register error", error.ToString(), "OK");
+                    }
+                }
+                else
+                {
+                    if (passwordValidator.IsNotValid)
+                    {
+                        foreach (var error in passwordValidator.Errors)
+                        {
+                            await DisplayAlert("Register error", error.ToString(), "OK");
+                        }
+                    }
+                    else
+                    {
+                        if (rpasswordValidator.IsNotValid)
+                        {
+                            await DisplayAlert("Register error", "Please Repeat your password", "OK");
+                        }
+                        else
+                        {
+                            if (rpassword_entry.Text != password_entry.Text)
+                            {
+                                await DisplayAlert("Register error", "Password do not match", "OK");
+                            }
+                            else
+                            {
+                                if (!_password.Equals(_confirmpassword)) { await Toast.Make("Passwords do not match").Show(); return; }
+                                SignUpData data = new SignUpData()
+                                {
+                                    Surname = _surname,
+                                    DisplayName = _givenname + " " + _surname,
+                                    UserPrincipalName = _userprincipalname.Trim().ToLower(),
+                                    GivenName = _givenname,
+                                    Password = _password,
+                                    MailNickname = _userprincipalname,
+                                };
+
+                                try
+                                {
+                                    var result = await restService.TriggerLogicApp(data);
+                                    Debug.WriteLine(result);
+                                    await _authService.LoginSilently(data.UserPrincipalName, data.Password);
+                                    await Shell.Current.GoToAsync($"//{nameof(Home)}");
+                                    return;
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.WriteLine(ex);
+                                    return;
+                                }
+                            }
+                            
+                        }
+                        
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    public async void LoginButonHandler(object sender, EventArgs e)
+    {
+        //await Navigation.PopAsync();
+        //await Navigation.PushAsync(new Login(_authService, _recordAudioService, _audioPlayerService));
+        //await Shell.Current.GoToAsync(nameof(Login));
+        await Shell.Current.GoToAsync($"../{nameof(Login)}");
+    }
+
+    private void OnGivenNameChange (object sender, TextChangedEventArgs e) { _givenname = ((Entry)sender).Text; } 
+    private void OnSurnameChange (object sender, TextChangedEventArgs e) { _surname = ((Entry)sender).Text; } 
+    private void OnUserNameChange (object sender, TextChangedEventArgs e) { _userprincipalname = ((Entry)sender).Text; }
+    private void OnPasswordChange (object sender, TextChangedEventArgs e) { _password = ((Entry)sender).Text; }
+    private void OnPasswordConfirmChange (object sender, TextChangedEventArgs e) { _confirmpassword = ((Entry)sender).Text; }
+}
