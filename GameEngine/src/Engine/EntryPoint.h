@@ -10,7 +10,7 @@ void main(int argc, char** argv)
 
 	Engine::Log::Init();
 	GE_CORE_WARN("Initialized Log!");
-	GE_CLIENT_INFO("LAMO");
+	GE_CLIENT_INFO("Logging");
 
 	auto app = Engine::CreateApplication();
 	app->Run();
